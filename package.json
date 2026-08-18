@@ -1,0 +1,13 @@
+{
+  "name": "@cloakwp/inline-formats",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Block editor scripts for cloakwp/inline-formats",
+  "scripts": {
+    "build": "wp-scripts build js/src/index.js --output-path=js/build",
+    "start": "wp-scripts start js/src/index.js --output-path=js/build"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^30.0.0"
+  }
+}
