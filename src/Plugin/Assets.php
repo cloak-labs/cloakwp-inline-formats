@@ -39,14 +39,23 @@ final class Assets
       return;
     }
 
-    $deps = ['wp-rich-text', 'wp-block-editor', 'wp-components', 'wp-element', 'wp-i18n', 'wp-data', 'wp-compose'];
+    // wp-format-library must load first so we can unregister core/bold etc.
+    $deps = [
+      'wp-rich-text',
+      'wp-block-editor',
+      'wp-components',
+      'wp-element',
+      'wp-i18n',
+      'wp-data',
+      'wp-format-library',
+    ];
     $assetVersion = $version;
 
     if (is_readable($assetPath)) {
       /** @var array{dependencies?: list<string>, version?: string} $asset */
       $asset = require $assetPath;
       if (isset($asset['dependencies']) && is_array($asset['dependencies'])) {
-        $deps = $asset['dependencies'];
+        $deps = array_values(array_unique(array_merge($asset['dependencies'], ['wp-format-library'])));
       }
       if (isset($asset['version']) && is_string($asset['version'])) {
         $assetVersion = $asset['version'];
