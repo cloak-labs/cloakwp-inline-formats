@@ -20,6 +20,8 @@ final class FontWeightTest extends TestCase
     $this->assertSame('span', $config['tagName']);
     $this->assertSame('has-inline-font-weight', $config['className']);
     $this->assertSame(['style' => 'style'], $config['attributes']);
+    $this->assertSame('toolbar', $config['placement']);
+    $this->assertSame(['core/bold'], $config['unregister']);
     $this->assertSame('choice', $config['control']['type']);
     $this->assertSame('font-weight', $config['control']['styleProperty']);
 
@@ -29,6 +31,22 @@ final class FontWeightTest extends TestCase
     $labels = array_column($config['control']['options'], 'label');
     $this->assertContains('Medium', $labels);
     $this->assertContains('Semibold', $labels);
+  }
+
+  public function testInDropdownKeepsCoreBold(): void
+  {
+    $config = FontWeight::make()->inDropdown()->toEditorConfig();
+
+    $this->assertSame('dropdown', $config['placement']);
+    $this->assertArrayNotHasKey('unregister', $config);
+  }
+
+  public function testKeepBoldOnToolbar(): void
+  {
+    $config = FontWeight::make()->inToolbar()->keepBold()->toEditorConfig();
+
+    $this->assertSame('toolbar', $config['placement']);
+    $this->assertArrayNotHasKey('unregister', $config);
   }
 
   public function testWeightsListRestrictsOptions(): void

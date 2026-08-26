@@ -8,14 +8,18 @@ use CloakWP\InlineFormats\Core\Contract\Format;
 use InvalidArgumentException;
 
 /**
- * Shared fluent base for inline formats (tag, class, title, icon, block filter).
+ * Shared fluent base for inline formats (tag, class, title, icon, block filter, placement).
  *
  * @template T of self
  */
 abstract class InlineFormat implements Format
 {
+  public const PLACEMENT_TOOLBAR = 'toolbar';
+  public const PLACEMENT_DROPDOWN = 'dropdown';
+
   /**
    * @param list<string>|null $blocks Null = all rich-text contexts
+   * @param list<string> $unregister Format names to unregister when this format loads
    */
   protected function __construct(
     protected readonly string $formatName,
@@ -24,6 +28,8 @@ abstract class InlineFormat implements Format
     protected readonly string $className,
     protected readonly ?string $icon,
     protected readonly ?array $blocks,
+    protected readonly string $placement,
+    protected readonly array $unregister,
   ) {
     if ($formatName === '') {
       throw new InvalidArgumentException('Format name cannot be empty.');
@@ -31,6 +37,11 @@ abstract class InlineFormat implements Format
     if ($className === '' && $tagName === 'span') {
       throw new InvalidArgumentException(
         'span formats require a non-empty className (Gutenberg already uses bare span).'
+      );
+    }
+    if (!in_array($placement, [self::PLACEMENT_TOOLBAR, self::PLACEMENT_DROPDOWN], true)) {
+      throw new InvalidArgumentException(
+        'placement must be "toolbar" (block toolbar) or "dropdown" (formatting overflow).'
       );
     }
   }
@@ -89,6 +100,47 @@ abstract class InlineFormat implements Format
   }
 
   /**
+   * Show on the main block toolbar (beside bold/italic when using BlockControls).
+   *
+   * @return T
+   */
+  public function inToolbar(): static
+  {
+    return $this->with(placement: self::PLACEMENT_TOOLBAR);
+  }
+
+  /**
+   * Show in the formatting overflow menu (▾ next to bold/italic).
+   *
+   * @return T
+   */
+  public function inDropdown(): static
+  {
+    return $this->with(placement: self::PLACEMENT_DROPDOWN);
+  }
+
+  /**
+   * Alias for placement — "toolbar" | "dropdown".
+   *
+   * @return T
+   */
+  public function placement(string $placement): static
+  {
+    return $this->with(placement: $placement);
+  }
+
+  /**
+   * Unregister other format types when this one loads (e.g. core/bold).
+   *
+   * @param list<string> $names
+   * @return T
+   */
+  public function unregister(array $names): static
+  {
+    return $this->with(unregister: array_values($names), unregisterSet: true);
+  }
+
+  /**
    * @return array<string, mixed>
    */
   protected function baseEditorConfig(): array
@@ -98,6 +150,7 @@ abstract class InlineFormat implements Format
       'title' => $this->title,
       'tagName' => $this->tagName,
       'className' => $this->className,
+      'placement' => $this->placement,
       'attributes' => [
         'style' => 'style',
       ],
@@ -111,11 +164,16 @@ abstract class InlineFormat implements Format
       $config['blocks'] = $this->blocks;
     }
 
+    if ($this->unregister !== []) {
+      $config['unregister'] = $this->unregister;
+    }
+
     return $config;
   }
 
   /**
    * @param list<string>|null $blocks
+   * @param list<string>|null $unregister
    * @return T
    */
   abstract protected function with(
@@ -126,5 +184,8 @@ abstract class InlineFormat implements Format
     bool $iconSet = false,
     ?array $blocks = null,
     bool $blocksSet = false,
+    ?string $placement = null,
+    ?array $unregister = null,
+    bool $unregisterSet = false,
   ): static;
 }

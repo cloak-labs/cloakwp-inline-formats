@@ -10,7 +10,8 @@ use InvalidArgumentException;
 /**
  * Built-in choice format for inline font-weight.
  *
- * Composes ChoiceFormat rather than extending it so the public API stays focused.
+ * Defaults to the block toolbar and replaces core Bold (same control surface).
+ * Use ->inDropdown() to keep core Bold and move this into the overflow menu.
  */
 final class FontWeight implements Format
 {
@@ -33,10 +34,12 @@ final class FontWeight implements Format
   private const DEFAULT_WEIGHTS = [300, 400, 500, 600, 700];
 
   private ChoiceFormat $format;
+  private bool $replaceBold;
 
-  private function __construct(ChoiceFormat $format)
+  private function __construct(ChoiceFormat $format, bool $replaceBold)
   {
     $this->format = $format;
+    $this->replaceBold = $replaceBold;
   }
 
   public static function make(): self
@@ -46,6 +49,8 @@ final class FontWeight implements Format
         ->title('Font weight')
         ->className('has-inline-font-weight')
         ->icon('editor-bold')
+        ->inToolbar(),
+      replaceBold: true,
     );
   }
 
@@ -67,7 +72,7 @@ final class FontWeight implements Format
 
     if (array_is_list($weights) && isset($weights[0]) && is_array($weights[0])) {
       /** @var list<array{label: string, value: string|int}> $weights */
-      return new self($this->format->options($weights));
+      return new self($this->format->options($weights), $this->replaceBold);
     }
 
     if (array_is_list($weights)) {
@@ -76,11 +81,11 @@ final class FontWeight implements Format
         $ints[] = (int) $w;
       }
 
-      return new self($this->format->options(self::optionsFromWeights($ints)));
+      return new self($this->format->options(self::optionsFromWeights($ints)), $this->replaceBold);
     }
 
     /** @var array<int|string, string> $weights */
-    return new self($this->format->options($weights));
+    return new self($this->format->options($weights), $this->replaceBold);
   }
 
   /**
@@ -93,17 +98,17 @@ final class FontWeight implements Format
 
   public function title(string $title): self
   {
-    return new self($this->format->title($title));
+    return new self($this->format->title($title), $this->replaceBold);
   }
 
   public function className(string $className): self
   {
-    return new self($this->format->className($className));
+    return new self($this->format->className($className), $this->replaceBold);
   }
 
   public function icon(?string $icon): self
   {
-    return new self($this->format->icon($icon));
+    return new self($this->format->icon($icon), $this->replaceBold);
   }
 
   /**
@@ -111,7 +116,52 @@ final class FontWeight implements Format
    */
   public function blocks(?array $blocks): self
   {
-    return new self($this->format->blocks($blocks));
+    return new self($this->format->blocks($blocks), $this->replaceBold);
+  }
+
+  /**
+   * Main block toolbar. Replaces core Bold by default (use keepBold() to opt out).
+   */
+  public function inToolbar(): self
+  {
+    return new self($this->format->inToolbar(), true);
+  }
+
+  /**
+   * Formatting overflow (▾). Keeps core Bold.
+   */
+  public function inDropdown(): self
+  {
+    return new self($this->format->inDropdown(), false);
+  }
+
+  public function placement(string $placement): self
+  {
+    if ($placement === ChoiceFormat::PLACEMENT_TOOLBAR) {
+      return $this->inToolbar();
+    }
+
+    if ($placement === ChoiceFormat::PLACEMENT_DROPDOWN) {
+      return $this->inDropdown();
+    }
+
+    return new self($this->format->placement($placement), $this->replaceBold);
+  }
+
+  /**
+   * Unregister core/bold when this format loads (default when inToolbar()).
+   */
+  public function replaceBold(bool $replace = true): self
+  {
+    return new self($this->format, $replace);
+  }
+
+  /**
+   * Keep the native Bold button alongside Font weight.
+   */
+  public function keepBold(): self
+  {
+    return $this->replaceBold(false);
   }
 
   public function name(): string
@@ -124,7 +174,11 @@ final class FontWeight implements Format
    */
   public function toEditorConfig(): array
   {
-    return $this->format->toEditorConfig();
+    $format = $this->replaceBold
+      ? $this->format->unregister(['core/bold'])
+      : $this->format->unregister([]);
+
+    return $format->toEditorConfig();
   }
 
   /**
@@ -132,7 +186,9 @@ final class FontWeight implements Format
    */
   public function toFormat(): ChoiceFormat
   {
-    return $this->format;
+    return $this->replaceBold
+      ? $this->format->unregister(['core/bold'])
+      : $this->format->unregister([]);
   }
 
   /**

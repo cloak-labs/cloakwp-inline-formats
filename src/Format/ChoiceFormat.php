@@ -16,6 +16,7 @@ final class ChoiceFormat extends InlineFormat
   /**
    * @param list<array{label: string, value: string}> $options
    * @param list<string>|null $blocks
+   * @param list<string> $unregister
    */
   private function __construct(
     string $formatName,
@@ -24,10 +25,21 @@ final class ChoiceFormat extends InlineFormat
     string $className,
     ?string $icon,
     ?array $blocks,
+    string $placement,
+    array $unregister,
     private readonly string $styleProperty,
     private readonly array $options,
   ) {
-    parent::__construct($formatName, $title, $tagName, $className, $icon, $blocks);
+    parent::__construct(
+      $formatName,
+      $title,
+      $tagName,
+      $className,
+      $icon,
+      $blocks,
+      $placement,
+      $unregister,
+    );
 
     if ($styleProperty === '') {
       throw new InvalidArgumentException('styleProperty cannot be empty.');
@@ -52,6 +64,8 @@ final class ChoiceFormat extends InlineFormat
       className: 'has-inline-' . sanitize_key(str_replace('/', '-', self::qualifyName($name))),
       icon: null,
       blocks: null,
+      placement: self::PLACEMENT_DROPDOWN,
+      unregister: [],
       styleProperty: $styleProperty,
       options: $normalized,
     );
@@ -89,6 +103,9 @@ final class ChoiceFormat extends InlineFormat
     bool $iconSet = false,
     ?array $blocks = null,
     bool $blocksSet = false,
+    ?string $placement = null,
+    ?array $unregister = null,
+    bool $unregisterSet = false,
   ): static {
     return $this->cloneWith(
       title: $title,
@@ -98,12 +115,16 @@ final class ChoiceFormat extends InlineFormat
       iconSet: $iconSet,
       blocks: $blocks,
       blocksSet: $blocksSet,
+      placement: $placement,
+      unregister: $unregister,
+      unregisterSet: $unregisterSet,
     );
   }
 
   /**
    * @param list<array{label: string, value: string}>|null $options
    * @param list<string>|null $blocks
+   * @param list<string>|null $unregister
    */
   private function cloneWith(
     ?string $title = null,
@@ -113,6 +134,9 @@ final class ChoiceFormat extends InlineFormat
     bool $iconSet = false,
     ?array $blocks = null,
     bool $blocksSet = false,
+    ?string $placement = null,
+    ?array $unregister = null,
+    bool $unregisterSet = false,
     ?string $styleProperty = null,
     ?array $options = null,
   ): self {
@@ -123,6 +147,8 @@ final class ChoiceFormat extends InlineFormat
       className: $className ?? $this->className,
       icon: $iconSet ? $icon : $this->icon,
       blocks: $blocksSet ? $blocks : $this->blocks,
+      placement: $placement ?? $this->placement,
+      unregister: $unregisterSet ? ($unregister ?? []) : $this->unregister,
       styleProperty: $styleProperty ?? $this->styleProperty,
       options: $options ?? $this->options,
     );

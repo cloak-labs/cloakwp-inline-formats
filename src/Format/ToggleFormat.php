@@ -15,6 +15,7 @@ final class ToggleFormat extends InlineFormat
 {
   /**
    * @param list<string>|null $blocks
+   * @param list<string> $unregister
    */
   private function __construct(
     string $formatName,
@@ -23,9 +24,20 @@ final class ToggleFormat extends InlineFormat
     string $className,
     ?string $icon,
     ?array $blocks,
+    string $placement,
+    array $unregister,
     private readonly string $style,
   ) {
-    parent::__construct($formatName, $title, $tagName, $className, $icon, $blocks);
+    parent::__construct(
+      $formatName,
+      $title,
+      $tagName,
+      $className,
+      $icon,
+      $blocks,
+      $placement,
+      $unregister,
+    );
   }
 
   public static function make(string $name): self
@@ -40,6 +52,8 @@ final class ToggleFormat extends InlineFormat
       className: 'has-inline-' . $slug,
       icon: null,
       blocks: null,
+      placement: self::PLACEMENT_DROPDOWN,
+      unregister: [],
       style: '',
     );
   }
@@ -81,6 +95,9 @@ final class ToggleFormat extends InlineFormat
     bool $iconSet = false,
     ?array $blocks = null,
     bool $blocksSet = false,
+    ?string $placement = null,
+    ?array $unregister = null,
+    bool $unregisterSet = false,
   ): static {
     return $this->cloneWith(
       title: $title,
@@ -90,11 +107,15 @@ final class ToggleFormat extends InlineFormat
       iconSet: $iconSet,
       blocks: $blocks,
       blocksSet: $blocksSet,
+      placement: $placement,
+      unregister: $unregister,
+      unregisterSet: $unregisterSet,
     );
   }
 
   /**
    * @param list<string>|null $blocks
+   * @param list<string>|null $unregister
    */
   private function cloneWith(
     ?string $title = null,
@@ -104,6 +125,9 @@ final class ToggleFormat extends InlineFormat
     bool $iconSet = false,
     ?array $blocks = null,
     bool $blocksSet = false,
+    ?string $placement = null,
+    ?array $unregister = null,
+    bool $unregisterSet = false,
     ?string $style = null,
   ): self {
     return new self(
@@ -113,6 +137,8 @@ final class ToggleFormat extends InlineFormat
       className: $className ?? $this->className,
       icon: $iconSet ? $icon : $this->icon,
       blocks: $blocksSet ? $blocks : $this->blocks,
+      placement: $placement ?? $this->placement,
+      unregister: $unregisterSet ? ($unregister ?? []) : $this->unregister,
       style: $style ?? $this->style,
     );
   }
