@@ -1,6 +1,6 @@
 # Inline Formats
 
-Core-like Gutenberg inline formats for WordPress — PHP-configured, no settings UI, no admin notices, no premium upsells.
+Core-like Gutenberg inline formats for WordPress — PHP-configured, no settings UI, no admin notices, fully open-source, no premium upsells.
 
 Apply visual styles (starting with **font-weight**) to a *selection* inside a paragraph, heading, or other rich-text field — not the whole block. Output is plain HTML:
 
@@ -80,17 +80,30 @@ InlineFormats::make()
     FontWeight::make()
       ->weights([400, 500, 600, 700])          // or [400 => 'Book', 500 => 'Medium']
       ->blocks(['core/paragraph', 'core/heading']) // optional
+      // defaults: ->inToolbar() + replaces core Bold
+      // ->inDropdown()   // overflow menu; keeps core Bold
+      // ->keepBold()     // toolbar, but leave core Bold alone
   )
   ->add(
     ToggleFormat::make('small-caps')
       ->title('Small caps')
       ->style('font-variant: small-caps')
+      ->inDropdown()                           // default for non-FontWeight formats
   )
   ->except(['cloakwp/font-weight'])            // remove a format by name
   ->register();
 ```
 
 `add()` is keyed by format name — a second `FontWeight::make()` **replaces** the default. Use `->allCssWeights()` for the full 100–900 range.
+
+### Toolbar placement
+
+| Method | Where it shows | Notes |
+|--------|----------------|-------|
+| `->inToolbar()` | Block toolbar (main row) | FontWeight default; replaces core Bold unless `->keepBold()` |
+| `->inDropdown()` | Formatting overflow (▾) | Default for `ChoiceFormat` / `ToggleFormat`; keeps core Bold |
+
+When Font Weight sits on the toolbar it **replaces** the native Bold button — same “B” affordance, but a weight menu (Light → Bold) instead of a binary toggle. Semantic `<strong>` via Bold is intentionally dropped in that mode; use `->inDropdown()` or `->keepBold()` if you need both.
 
 ### Config filter
 
@@ -118,7 +131,7 @@ PHP owns format definitions. The JS bundle is a thin engine: it reads `window.in
 
 ## Building editor assets
 
-Prebuilt `js/build/` is committed so Composer/ZIP installs need no Node. To rebuild:
+Prebuilt `js/build/` is committed so Composer/ZIP installs don't need Node.js. To rebuild:
 
 ```bash
 pnpm install
@@ -129,4 +142,4 @@ pnpm run build
 
 Formats store styles as HTML attributes (`style="font-weight: 500"`) plus a marker class. No custom tables, no options UI that saves config to the database (configure via PHP).
 
-Does **not** replace core Bold (`<strong>`). Weight is visual and can nest with bold/italic/links.
+Weight is visual (`font-weight`) and can nest with italic/links. Core Bold (`<strong>`) is unregistered by default when Font Weight sits on the toolbar; use `->inDropdown()` or `->keepBold()` to keep both.
