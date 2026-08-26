@@ -1,29 +1,28 @@
 /**
- * Dropdown control for choice formats (e.g. font-weight).
+ * Choice format control — toolbar (BlockControls) or overflow (RichTextToolbarButton).
  */
 
-import { MenuItem, ToolbarDropdownMenu } from '@wordpress/components';
+import { useState } from '@wordpress/element';
+import {
+	BlockControls,
+	RichTextToolbarButton,
+} from '@wordpress/block-editor';
+import {
+	Popover,
+	ToolbarDropdownMenu,
+	ToolbarGroup,
+} from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
-import { applyFormat, removeFormat } from '@wordpress/rich-text';
-import { __ } from '@wordpress/i18n';
-import { buildStyleAttribute, getStyleProperty } from '../styleUtils';
+import { ChoiceMenuItems } from './ChoiceMenuItems';
 
 /**
  * @param {Object} props
- * @param {Object} props.formatConfig
- * @param {boolean} props.isActive
- * @param {Object} props.activeAttributes
- * @param {Object} props.value
- * @param {Function} props.onChange
  */
-export default function ChoiceControl({
-	formatConfig,
-	isActive,
-	activeAttributes,
-	value,
-	onChange,
-}) {
-	const { name, title, icon, blocks, control } = formatConfig;
+export default function ChoiceControl(props) {
+	const { formatConfig } = props;
+	const { title, icon, blocks, placement = 'dropdown' } = formatConfig;
+	const [isOpen, setIsOpen] = useState(false);
+
 	const selectedBlock = useSelect((select) => {
 		return select('core/block-editor').getSelectedBlock();
 	}, []);
@@ -34,62 +33,51 @@ export default function ChoiceControl({
 		}
 	}
 
-	const styleProperty = control.styleProperty;
-	const options = control.options || [];
-	const activeValue = isActive
-		? getStyleProperty(activeAttributes?.style, styleProperty)
-		: undefined;
+	const menuProps = {
+		...props,
+		onClose: () => setIsOpen(false),
+	};
 
-	return (
-		<ToolbarDropdownMenu icon={icon || 'editor-bold'} label={title}>
-			{({ onClose }) => (
-				<>
-					<MenuItem
-						role="menuitemradio"
-						isSelected={!isActive}
-						onClick={() => {
-							onChange(removeFormat(value, name));
-							onClose();
+	if (placement === 'toolbar') {
+		return (
+			<BlockControls group="inline">
+				<ToolbarGroup>
+					<ToolbarDropdownMenu
+						icon={icon || 'editor-bold'}
+						label={title}
+						toggleProps={{
+							describedBy: title,
+							isPressed: props.isActive,
 						}}
 					>
-						{__('Default', 'inline-formats')}
-					</MenuItem>
-					{options.map((option) => {
-						const optionValue = String(option.value);
-						const isOptionActive =
-							isActive && activeValue === optionValue;
-						const previewStyle =
-							styleProperty === 'font-weight'
-								? { fontWeight: optionValue }
-								: undefined;
+						{({ onClose }) => (
+							<ChoiceMenuItems {...props} onClose={onClose} />
+						)}
+					</ToolbarDropdownMenu>
+				</ToolbarGroup>
+			</BlockControls>
+		);
+	}
 
-						return (
-							<MenuItem
-								key={optionValue}
-								role="menuitemradio"
-								isSelected={isOptionActive}
-								onClick={() => {
-									onChange(
-										applyFormat(value, {
-											type: name,
-											attributes: {
-												style: buildStyleAttribute(
-													styleProperty,
-													optionValue
-												),
-											},
-										})
-									);
-									onClose();
-								}}
-								style={previewStyle}
-							>
-								{option.label || optionValue}
-							</MenuItem>
-						);
-					})}
-				</>
+	// Overflow / "More" formatting menu.
+	return (
+		<>
+			<RichTextToolbarButton
+				icon={icon || 'editor-bold'}
+				title={title}
+				isActive={props.isActive || isOpen}
+				onClick={() => setIsOpen((open) => !open)}
+			/>
+			{isOpen && (
+				<Popover
+					placement="bottom-start"
+					onClose={() => setIsOpen(false)}
+				>
+					<div style={{ padding: '4px 0', minWidth: '160px' }}>
+						<ChoiceMenuItems {...menuProps} />
+					</div>
+				</Popover>
 			)}
-		</ToolbarDropdownMenu>
+		</>
 	);
 }

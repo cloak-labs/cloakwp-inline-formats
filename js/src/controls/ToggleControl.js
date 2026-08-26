@@ -1,8 +1,12 @@
 /**
- * Toggle control for on/off formats with a fixed style declaration.
+ * Toggle control — toolbar (BlockControls) or overflow (RichTextToolbarButton).
  */
 
-import { RichTextToolbarButton } from '@wordpress/block-editor';
+import {
+	BlockControls,
+	RichTextToolbarButton,
+} from '@wordpress/block-editor';
+import { ToolbarButton, ToolbarGroup } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 import { toggleFormat } from '@wordpress/rich-text';
 
@@ -19,7 +23,8 @@ export default function ToggleControl({
 	value,
 	onChange,
 }) {
-	const { name, title, icon, blocks, control } = formatConfig;
+	const { name, title, icon, blocks, control, placement = 'dropdown' } =
+		formatConfig;
 	const selectedBlock = useSelect((select) => {
 		return select('core/block-editor').getSelectedBlock();
 	}, []);
@@ -30,21 +35,38 @@ export default function ToggleControl({
 		}
 	}
 
+	const onClick = () => {
+		onChange(
+			toggleFormat(value, {
+				type: name,
+				attributes: {
+					style: control.style,
+				},
+			})
+		);
+	};
+
+	if (placement === 'toolbar') {
+		return (
+			<BlockControls group="inline">
+				<ToolbarGroup>
+					<ToolbarButton
+						icon={icon || 'editor-code'}
+						label={title}
+						isPressed={isActive}
+						onClick={onClick}
+					/>
+				</ToolbarGroup>
+			</BlockControls>
+		);
+	}
+
 	return (
 		<RichTextToolbarButton
 			icon={icon || 'editor-code'}
 			title={title}
 			isActive={isActive}
-			onClick={() => {
-				onChange(
-					toggleFormat(value, {
-						type: name,
-						attributes: {
-							style: control.style,
-						},
-					})
-				);
-			}}
+			onClick={onClick}
 		/>
 	);
 }
