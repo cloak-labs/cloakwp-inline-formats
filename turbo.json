@@ -1,17 +1,10 @@
 {
   "$schema": "https://v2-11-5.turborepo.dev/schema.json",
-  "extends": [
-    "//"
-  ],
+  "extends": ["//"],
   "tasks": {
     "build": {
-      "outputs": [
-        "js/build/**"
-      ],
-      "inputs": [
-        "$TURBO_EXTENDS$",
-        "!js/build/**"
-      ]
+      "outputs": ["js/build/**"],
+      "inputs": ["$TURBO_EXTENDS$", "!js/build/**"]
     }
   }
 }

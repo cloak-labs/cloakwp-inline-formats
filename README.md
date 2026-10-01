@@ -2,10 +2,12 @@
 
 Core-like Gutenberg inline formats for WordPress — PHP-configured, no settings UI, no admin notices, fully open-source, no premium upsells.
 
-Apply visual styles (starting with **font-weight**) to a *selection* inside a paragraph, heading, or other rich-text field — not the whole block. Output is plain HTML:
+Apply visual styles (starting with **font-weight**) to a _selection_ inside a paragraph, heading, or other rich-text field — not the whole block. Output is plain HTML:
 
 ```html
-<span class="has-inline-font-weight" style="font-weight: 500;">just these words</span>
+<span class="has-inline-font-weight" style="font-weight: 500;"
+  >just these words</span
+>
 ```
 
 That markup works in classic WordPress themes and headless frontends (e.g. Next.js) that render block HTML as-is.
@@ -98,10 +100,10 @@ InlineFormats::make()
 
 ### Toolbar placement
 
-| Method | Where it shows | Notes |
-|--------|----------------|-------|
-| `->inToolbar()` | Block toolbar (main row) | FontWeight default; replaces core Bold unless `->keepBold()` |
-| `->inDropdown()` | Formatting overflow (▾) | Default for `ChoiceFormat` / `ToggleFormat`; keeps core Bold |
+| Method           | Where it shows           | Notes                                                        |
+| ---------------- | ------------------------ | ------------------------------------------------------------ |
+| `->inToolbar()`  | Block toolbar (main row) | FontWeight default; replaces core Bold unless `->keepBold()` |
+| `->inDropdown()` | Formatting overflow (▾)  | Default for `ChoiceFormat` / `ToggleFormat`; keeps core Bold |
 
 When Font Weight sits on the toolbar it **replaces** the native Bold button — same “B” affordance, but a weight menu (Light → Bold) instead of a binary toggle. Semantic `<strong>` via Bold is intentionally dropped in that mode; use `->inDropdown()` or `->keepBold()` if you need both.
 

@@ -2,10 +2,10 @@
  * Shared choice menu items (weight options, etc.).
  */
 
-import { MenuItem } from '@wordpress/components';
-import { applyFormat, removeFormat } from '@wordpress/rich-text';
-import { __ } from '@wordpress/i18n';
-import { buildStyleAttribute, getStyleProperty } from '../styleUtils';
+import { MenuItem } from "@wordpress/components";
+import { applyFormat, removeFormat } from "@wordpress/rich-text";
+import { __ } from "@wordpress/i18n";
+import { buildStyleAttribute, getStyleProperty } from "../styleUtils";
 
 /**
  * @param {Object} props
@@ -17,65 +17,62 @@ import { buildStyleAttribute, getStyleProperty } from '../styleUtils';
  * @param {Function} props.onClose
  */
 export function ChoiceMenuItems({
-	formatConfig,
-	isActive,
-	activeAttributes,
-	value,
-	onChange,
-	onClose,
+  formatConfig,
+  isActive,
+  activeAttributes,
+  value,
+  onChange,
+  onClose,
 }) {
-	const { name, control } = formatConfig;
-	const styleProperty = control.styleProperty;
-	const options = control.options || [];
-	const activeValue = isActive
-		? getStyleProperty(activeAttributes?.style, styleProperty)
-		: undefined;
+  const { name, control } = formatConfig;
+  const styleProperty = control.styleProperty;
+  const options = control.options || [];
+  const activeValue = isActive
+    ? getStyleProperty(activeAttributes?.style, styleProperty)
+    : undefined;
 
-	return (
-		<>
-			<MenuItem
-				role="menuitemradio"
-				isSelected={!isActive}
-				onClick={() => {
-					onChange(removeFormat(value, name));
-					onClose();
-				}}
-			>
-				{__('Default', 'inline-formats')}
-			</MenuItem>
-			{options.map((option) => {
-				const optionValue = String(option.value);
-				const isOptionActive = isActive && activeValue === optionValue;
-				const previewStyle =
-					styleProperty === 'font-weight'
-						? { fontWeight: optionValue }
-						: undefined;
+  return (
+    <>
+      <MenuItem
+        role="menuitemradio"
+        isSelected={!isActive}
+        onClick={() => {
+          onChange(removeFormat(value, name));
+          onClose();
+        }}
+      >
+        {__("Default", "inline-formats")}
+      </MenuItem>
+      {options.map((option) => {
+        const optionValue = String(option.value);
+        const isOptionActive = isActive && activeValue === optionValue;
+        const previewStyle =
+          styleProperty === "font-weight"
+            ? { fontWeight: optionValue }
+            : undefined;
 
-				return (
-					<MenuItem
-						key={optionValue}
-						role="menuitemradio"
-						isSelected={isOptionActive}
-						onClick={() => {
-							onChange(
-								applyFormat(value, {
-									type: name,
-									attributes: {
-										style: buildStyleAttribute(
-											styleProperty,
-											optionValue
-										),
-									},
-								})
-							);
-							onClose();
-						}}
-						style={previewStyle}
-					>
-						{option.label || optionValue}
-					</MenuItem>
-				);
-			})}
-		</>
-	);
+        return (
+          <MenuItem
+            key={optionValue}
+            role="menuitemradio"
+            isSelected={isOptionActive}
+            onClick={() => {
+              onChange(
+                applyFormat(value, {
+                  type: name,
+                  attributes: {
+                    style: buildStyleAttribute(styleProperty, optionValue),
+                  },
+                }),
+              );
+              onClose();
+            }}
+            style={previewStyle}
+          >
+            {option.label || optionValue}
+          </MenuItem>
+        );
+      })}
+    </>
+  );
 }
