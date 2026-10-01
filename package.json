@@ -5,9 +5,12 @@
   "description": "Block editor scripts for cloakwp/inline-formats",
   "scripts": {
     "build": "wp-scripts build js/src/index.js --output-path=js/build",
-    "start": "wp-scripts start js/src/index.js --output-path=js/build"
+    "start": "wp-scripts start js/src/index.js --output-path=js/build",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check ."
   },
   "devDependencies": {
-    "@wordpress/scripts": "^30.0.0"
+    "@wordpress/scripts": "^30.0.0",
+    "oxfmt": "0.71.0"
   }
 }
